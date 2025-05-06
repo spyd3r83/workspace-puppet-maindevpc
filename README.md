@@ -54,6 +54,9 @@ The manifest configures PowerToys with the following features enabled:
 - ImageResizer
 - PowerRename
 
+### Windows System Configuration Changes
+- Power Setting always on (AC Adapter)
+
 ### Directory Structure
 ```
 workspace-puppet-maindevpc/
@@ -64,6 +67,7 @@ workspace-puppet-maindevpc/
 ├── puppet_build/    # Contains Puppet MSI installer
 └── README.md
 ```
+
 
 ## Troubleshooting
 

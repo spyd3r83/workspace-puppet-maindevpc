@@ -176,3 +176,40 @@ if Deferred('powershell::exec', [
       require         => Exec['install_chocolatey_module'],
     }
   }
+
+
+# Get system path for powercfg.exe
+$system_root = $facts['windows_env']['WINDIR']
+$powercfg = "${system_root}\\System32\\powercfg.exe"
+
+# Set sleep to 'Never' when plugged in (AC power)
+exec { 'disable_sleep_on_ac':
+  command => "${powercfg} /SETACVALUEINDEX SCHEME_CURRENT SUB_SLEEP STANDBYIDLE 0",
+  unless  => "${powercfg} /QUERY SCHEME_CURRENT SUB_SLEEP STANDBYIDLE | Select-String -Pattern '0x0'",
+}
+
+# Set hibernate to 'Never' when plugged in (AC power)
+exec { 'disable_hibernate_on_ac':
+  command => "${powercfg} /SETACVALUEINDEX SCHEME_CURRENT SUB_SLEEP HIBERNATEIDLE 0",
+  unless  => "${powercfg} /QUERY SCHEME_CURRENT SUB_SLEEP HIBERNATEIDLE | Select-String -Pattern '0x0'",
+}
+
+# Set display to 'Never turn off' when plugged in (AC power)
+exec { 'keep_display_on_ac':
+  command => "${powercfg} /SETACVALUEINDEX SCHEME_CURRENT SUB_VIDEO VIDEOIDLE 0",
+  unless  => "${powercfg} /QUERY SCHEME_CURRENT SUB_VIDEO VIDEOIDLE | Select-String -Pattern '0x0'",
+}
+
+# Set hard disk to 'Never turn off' when plugged in (AC power)
+exec { 'keep_hard_disk_on_ac':
+  command => "${powercfg} /SETACVALUEINDEX SCHEME_CURRENT SUB_DISK DISKIDLE 0",
+  unless  => "${powercfg} /QUERY SCHEME_CURRENT SUB_DISK DISKIDLE | Select-String -Pattern '0x0'",
+}
+
+# Apply changes to the current scheme
+exec { 'apply_power_settings':
+  command => "${powercfg} /SETACTIVE SCHEME_CURRENT",
+  require => [ Exec['disable_sleep_on_ac'], Exec['disable_hibernate_on_ac'], Exec['keep_display_on_ac'], Exec['keep_hard_disk_on_ac'] ],
+}
+
+
