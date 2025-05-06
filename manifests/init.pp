@@ -43,16 +43,32 @@ exec { 'launch_chrome':
 }
 
 
-# Configure PowerToys settings (ensure PowerToys is run at least once first)
-file { "C:/Users/${local_user}/AppData/Local/Microsoft/PowerToys/settings.json":
-  ensure  => file,
-  content => '{
-    "enabled": {
-      "FancyZones": true,
-      "FileExplorerPreview": true,
-      "ImageResizer": true,
-      "PowerRename": true
-    }
-  }',
+# Get Windows environment paths
+$appdata_local = $facts['windows_env']['LOCALAPPDATA']
+$powertoys_path = "${appdata_local}/Microsoft/PowerToys"
+
+# PowerToys configuration
+$powertoys_config = {
+  'enabled' => {
+    'FancyZones'         => true,
+    'FileExplorerPreview'=> true,
+    'ImageResizer'       => true,
+    'PowerRename'        => true
+  }
+}
+
+# Ensure PowerToys config directory exists
+file { 'powertoys_config_dir':
+  ensure  => directory,
+  path    => $powertoys_path,
   require => Package['powertoys'],
 }
+
+# Configure PowerToys settings
+file { 'powertoys_settings':
+  ensure  => file,
+  path    => "${powertoys_path}/settings.json",
+  content => stdlib::to_json_pretty($powertoys_config),
+  require => File['powertoys_config_dir'],
+}
+
