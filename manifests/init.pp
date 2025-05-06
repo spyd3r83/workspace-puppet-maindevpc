@@ -152,6 +152,13 @@ package { 'github-desktop':
   require  => Exec['install_chocolatey_module'],
 }
 
+# Install Steam
+package { 'steam':
+  ensure   => latest,
+  provider => chocolatey,
+  require  => Exec['install_chocolatey_module'],
+}
+
 # Install NVIDIA Display Driver if GPU is present
 if Deferred('powershell::exec', [
     'if (Get-WmiObject Win32_VideoController | Where-Object { $_.Name -match "NVIDIA" }) { return $true } else { return $false }'
