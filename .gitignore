@@ -1,0 +1,32 @@
+# Puppet specific
+.vagrant/
+.tmp/
+.librarian/
+.kitchen/
+Puppetfile.lock
+
+# Log files
+*.log
+logs/
+puppet_build/install.log
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# VS Code specific
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Keep MSI installers
+!*.msi
+!puppet_build/*.msi
+
+# Module directory
+modules/*
+!modules/README.md
