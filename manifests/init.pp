@@ -190,39 +190,10 @@ if Deferred('powershell::exec', [
 
 # Check if the machine is manufactured by Lenovo and apply Lenovo-specific configurations
 if $facts['dmi']['manufacturer'] =~ /(?i)lenovo/ {
-  # Download Lenovo Legion Toolkit
-  exec { 'download_legion_toolkit':
+  exec { 'install_legion_toolkit_winget':
     provider  => powershell,
-    command   => @(END_DOWNLOAD_LLT),
-      $ErrorActionPreference = 'Stop'
-      $apiUrl = 'https://api.github.com/repos/BartoszCichecki/LenovoLegionToolkit/releases/latest'
-      $downloadPath = 'C:\\Windows\\Temp\\LenovoLegionToolkitSetup.exe'
-      try {
-          $releaseInfo = Invoke-RestMethod -Uri $apiUrl
-          $downloadUrl = $releaseInfo.assets | Where-Object { $_.name -like '*Setup.exe' } | Select-Object -ExpandProperty browser_download_url -First 1
-          if ($downloadUrl) {
-              Write-Host "Downloading Lenovo Legion Toolkit from $downloadUrl"
-              Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath
-          } else {
-              Write-Error "Could not find Setup.exe in the latest release for Lenovo Legion Toolkit."
-              exit 1
-          }
-      } catch {
-          Write-Error "Error downloading Lenovo Legion Toolkit: $($_.Exception.Message)"
-          exit 1
-      }
-      END_DOWNLOAD_LLT
-    creates   => 'C:\Windows\Temp\LenovoLegionToolkitSetup.exe',
-    # Enable logging to capture the output of the execution for debugging or auditing purposes.
-    logoutput => true,
-  }
-
-  # Install Lenovo Legion Toolkit
-  exec { 'install_legion_toolkit':
-    provider  => powershell,
-    command   => 'Start-Process -FilePath "C:\Windows\Temp\LenovoLegionToolkitSetup.exe" -ArgumentList "/VERYSILENT /NORESTART" -Wait -PassThru; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }',
-    unless    => 'Test-Path "C:\Program Files\LenovoLegionToolkit\LenovoLegionToolkit.exe"',
-    require   => Exec['download_legion_toolkit'],
+    command   => 'winget install --id BartoszCichecki.LenovoLegionToolkit --accept-package-agreements --accept-source-agreements --silent',
+    unless    => 'if (winget list --id BartoszCichecki.LenovoLegionToolkit | Select-String "Lenovo Legion Toolkit") { exit 0 } else { exit 1 }',
     logoutput => true,
   }
 }
