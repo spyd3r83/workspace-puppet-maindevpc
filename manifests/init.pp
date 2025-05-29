@@ -45,12 +45,16 @@ package { 'powertoys':
   require         => Exec['install_chocolatey_module'],
 }
 
-# Install Samsung Magician
-package { 'samsung-magician':
-  ensure          => latest,
-  provider        => chocolatey,
-  install_options => ['--install-arguments="--silent"'],
-  require         => Exec['install_chocolatey_module'],
+# Install Samsung Magician only if a Samsung SSD is detected
+if Deferred('powershell::exec', [
+    'if (Get-WmiObject Win32_DiskDrive | Where-Object { $_.Model -like "*Samsung SSD*" }) { exit 0 } else { exit 1 }'
+  ]) {
+  package { 'samsung-magician':
+    ensure          => latest,
+    provider        => chocolatey,
+    install_options => ['--install-arguments="--silent"'],
+    require         => Exec['install_chocolatey_module'],
+  }
 }
 
 # Get Windows environment paths
