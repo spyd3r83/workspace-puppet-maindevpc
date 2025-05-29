@@ -22,15 +22,18 @@ if (Test-Path $puppetExe) {
     & $puppetExe --version | ForEach-Object { Write-Host "[+] Version: $_" }
 }
 else {
-    # Install Puppet
-    if (-Not (Test-Path $puppetInstaller)) {
-        Write-Host "[-] Puppet installer not found at: $puppetInstaller" -ForegroundColor Red
+    # Install Puppet using winget
+    Write-Host "[+] Fetching latest Puppet Agent version from winget..." -ForegroundColor Cyan
+    $puppetPackage = winget search --id Puppet.PuppetAgent | Select-String "Puppet.PuppetAgent" | Select-Object -First 1
+
+    if (-not $puppetPackage) {
+        Write-Host "[-] Puppet Agent package not found in winget." -ForegroundColor Red
         pause
         exit 1
     }
 
-    Write-Host "[+] Installing Puppet Agent..." -ForegroundColor Cyan
-    Start-Process msiexec.exe -ArgumentList "/i `"$puppetInstaller`" /qn /l*v `"$scriptDir\install.log`"" -Wait
+    Write-Host "[+] Installing Puppet Agent via winget..." -ForegroundColor Cyan
+    winget install --id Puppet.PuppetAgent --silent --accept-package-agreements --accept-source-agreements
     Write-Host "[+] Puppet Agent installation complete." -ForegroundColor Green
 }
 
