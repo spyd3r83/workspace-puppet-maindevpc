@@ -14,7 +14,7 @@ Set-Location $scriptDir
 # Define Puppet path and installer
 $puppetExe = "C:\Program Files\Puppet Labs\Puppet\bin\puppet.bat"
 $puppetInstaller = Join-Path $scriptDir "puppet_build\puppet-agent-7.34.0-x64.msi"
-$manifestPath = Join-Path $scriptDir "..\manifests\init.pp"
+$manifestPath = Join-Path $scriptDir "..\run.pp"
 
 # Check for Puppet installation
 if (Test-Path $puppetExe) {
@@ -42,9 +42,10 @@ if (Get-Command puppet -ErrorAction SilentlyContinue) {
     Write-Host "[+] Installing Puppet modules..." -ForegroundColor Cyan
     puppet module install puppetlabs-chocolatey
     puppet module install puppet/windows_env
-
+    
     Write-Host "[*] Applying manifest..." -ForegroundColor Cyan
-    puppet apply "$manifestPath" --verbose --debug
+    $defaultPath = puppet config print modulepath
+    puppet apply "$manifestPath" --modulepath="$defaultPath;.." --verbose --debug
 }
 else {
     Write-Host "[-] Puppet command not found after installation. Aborting." -ForegroundColor Red
