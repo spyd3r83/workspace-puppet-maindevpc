@@ -16,9 +16,9 @@ git clone https://github.com/yourusername/workspace-puppet-maindevpc.git
 cd workspace-puppet-maindevpc
 ```
 
-2. Run the installation script:
+2. Run the installation script from the project root:
 ```powershell
-.\scripts\install_puppet.ps1
+.\scripts\les_go.ps1
 ```
 
 This script will:
@@ -30,42 +30,80 @@ This script will:
 ## What Gets Installed
 
 ### Development Tools
-- Visual Studio Code
-- Docker Desktop
-- Git
-- PowerToys (with custom configuration)
+- Visual Studio Code (`vscode`)
+- Docker Desktop (`docker-desktop`)
+- Git (`git`)
+- GitHub Desktop (`github-desktop`)
 
 ### Browsers and Communication
-- Google Chrome
-- Discord
-- Zoom
-- Chrome Remote Desktop Host
+- Google Chrome (`googlechrome`)
+- Firefox (`firefox`)
+- Discord (`discord`)
+- Zoom (`zoom`)
+- Chrome Remote Desktop Host (`chrome-remote-desktop-host`)
 
 ### Graphics and Gaming
-- NVIDIA Display Driver (if NVIDIA GPU is detected)
-- Steam
+- Steam (`steam`)
+- NVIDIA GeForce Now (`nvidia-geforce-now`)
+- *Conditional:* NVIDIA App (`nvidia-app`) - Installs if an NVIDIA GPU is detected.
+- *Conditional:* GeForce Game Ready Driver (`geforce-game-ready-driver`) - Installs if an NVIDIA GPU is detected.
 
-## Configuration Details
+### Utilities
+- PowerToys (`powertoys`)
+- *Conditional:* Samsung Magician (`samsung-magician`) - Installs if a Samsung SSD is detected.
+- *Conditional:* Lenovo Legion Toolkit - Installs if the machine is manufactured by Lenovo.
+
+## System and Environment Configurations
+
+This section details the system and environment configurations applied by `mydevpc/manifests/env.pp`.
 
 ### PowerToys Configuration
-The manifest configures PowerToys with the following features enabled:
+The following PowerToys features are enabled:
 - FancyZones
 - FileExplorerPreview
 - ImageResizer
 - PowerRename
 
-### Windows System Configuration Changes
-- Power Setting always on (AC Adapter)
+### Power Settings (AC Adapter)
+The system is configured to optimize power settings when plugged in:
+- **Disable Sleep:** Prevents the system from entering sleep mode.
+- **Disable Hibernate:** Prevents the system from hibernating.
+- **Keep Display On:** Prevents the display from turning off.
+- **Keep Hard Disk On:** Prevents the hard disk from spinning down.
+
+### Startup Optimizations
+To speed up system startup:
+- `StartupDelayInMSec` is set to `0` (no delay).
+- `WaitForIdleState` is set to `0` (does not wait for idle state).
+
+### Forced Dark Mode
+- **Apps:** Light theme for applications is disabled (`AppsUseLightTheme` set to `0`).
+- **System:** Light theme for the system is disabled (`SystemUsesLightTheme` set to `0`).
+
+### Application Behavior
+- **Automatic Restart:** Applications that were open before shutdown/restart are automatically reopened on logon (`RestartApps` set to `1`).
+
+### Accessibility
+- **Text Scale Factor:** The system text scale factor is set to `110%` for improved readability.
 
 ### Directory Structure
 ```
-workspace-puppet-maindevpc/
-├── manifests/
-│   └── init.pp       # Main Puppet manifest
+<project_root>/
+├── .gitattributes
+├── .gitignore
+├── README.md
+├── mydevpc/
+│   └── manifests/
+│       ├── init.pp       # Main Puppet manifest for the 'mydevpc' module
+│       ├── env.pp        # Manifest for environment configurations
+│       └── programs.pp   # Manifest for program installations
+├── run.pp            # Main entry point for Puppet to apply configuration
 ├── scripts/
-│   └── install_puppet.ps1  # Installation script
-├── puppet_build/    # Contains Puppet MSI installer
-└── README.md
+│   ├── les_go.ps1    # Main installation and execution script
+│   └── puppet_build/
+│       ├── puppet-agent-7.34.0-x64.msi
+│       └── puppet-agent-7.34.0-x86.msi
+└── (Other files like .git may exist)
 ```
 
 
@@ -78,12 +116,12 @@ workspace-puppet-maindevpc/
 
 ### Logs
 - Puppet logs: `C:\ProgramData\PuppetLabs\puppet\var\log`
-- Installation log: `.\puppet_build\install.log`
+- Installation log: `.\scripts\puppet_build\install.log` (created after running `les_go.ps1`)
 
 ## Development
 
 ### Adding New Packages
-To add new Chocolatey packages, add them to `manifests/init.pp`:
+To add new Chocolatey packages, add them to `mydevpc/manifests/programs.pp`:
 
 ```puppet
 package { 'package-name':
